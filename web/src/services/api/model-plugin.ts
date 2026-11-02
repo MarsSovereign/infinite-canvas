@@ -3,6 +3,8 @@ import axios, { type AxiosRequestConfig } from "axios";
 import i18n from "@/i18n";
 import { buildApiUrl, withLocalProxy, type AiConfig, type ModelCapability } from "@/stores/use-config-store";
 
+import { H3_STUDIO_AUDIO_SCRIPT, H3_STUDIO_IMAGE_SCRIPT, H3_STUDIO_VIDEO_SCRIPT } from "./model-plugin-h3-studio";
+
 type RequestOptions = { signal?: AbortSignal };
 
 export type PluginHttpOptions = {
@@ -431,6 +433,7 @@ return await generateImage({
   request,
 });`,
         },
+        { label: i18n.t("modelPlugin.templates.h3Studio"), script: H3_STUDIO_IMAGE_SCRIPT },
     ],
     video: [
         {
@@ -714,6 +717,7 @@ return await generateVideo({
   poll,
 });`,
         },
+        { label: i18n.t("modelPlugin.templates.h3Studio"), script: H3_STUDIO_VIDEO_SCRIPT },
     ],
     audio: [
         {
@@ -842,6 +846,7 @@ return await generateAudio({
   request,
 });`,
         },
+        { label: i18n.t("modelPlugin.templates.h3Studio"), script: H3_STUDIO_AUDIO_SCRIPT },
     ],
     text: [
         {

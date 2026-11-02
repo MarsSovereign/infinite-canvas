@@ -9,6 +9,7 @@
     "render",
     "docker",
     "third-party-prompt-repositories",
+    "minimax-h3-studio",
     "[在线体验](https://canvas.best/)"
   ]
 }

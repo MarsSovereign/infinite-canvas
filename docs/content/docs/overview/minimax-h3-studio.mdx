@@ -1,0 +1,43 @@
+---
+title: MiniMax-H3 Studio
+description: Generate canvas videos, images and speech on your own GPU with a self-hosted MiniMax-H3 Studio
+---
+
+# MiniMax-H3 Studio
+
+[MiniMax-H3 Studio](https://github.com/MarsSovereign/minimax-h3-studio) is a generation service for a single GPU: MiniMax-H3 video (text, first frame, first + last frame, reference images and videos, guide audio), Qwen Image / FLUX.2 Klein / MOSS pictures and Qwen3-TTS-family speech. Built-in call scripts submit canvas generations to the Studio's own queue and poll the results; no cloud API is involved.
+
+## Studio settings
+
+Set these in the Studio's `.env`, then run `./deploy.sh server`:
+
+```bash
+# Origins the canvas page is opened from, comma-separated
+H3_CORS_ORIGINS=http://localhost:3000
+# Optional API token; generate one with: openssl rand -hex 24
+H3_API_TOKEN=
+```
+
+## Canvas settings
+
+1. Open Settings → Channels and add a channel. Base URL is the Studio address (for example `http://gpu-host:8190`); API Key is `H3_API_TOKEN`, or any text when the Studio has no token.
+2. Add the models by hand. For each one open Call script, insert the "MiniMax-H3 Studio (local GPU)" template and save:
+
+| Capability | Model name | Notes |
+| --- | --- | --- |
+| Video | `h3` | The Studio picks its recommended model for the mode and resolution |
+| Video | `fasth3-omniref`, `larryvrh-v4-sparse`, `pika-flex-ref2va-sparse-all`, … | A specific Studio model; see `loras` in the Studio's `/api/presets` |
+| Image | `qwen-image-21-turbo`, `flux-klein-4b`, `moss` | Reference images make an edit (up to 4; MOSS only generates) |
+| Audio | `qwen3_tts`, `voxcpm2`, `omnivoice` | Voice instructions design the voice; otherwise the model's default voice speaks |
+
+## Parameter mapping
+
+- Video first/last frame mode: no image is text to video, image 1 is the first frame, image 2 the last frame. Reference mode: up to 6 reference images and 3 reference videos (at least 2 s each). The first connected audio is sent as guide audio.
+- Duration is clamped to 2–15 s; 480p and below map to the Studio's 544p, everything else to 768p; ratios snap to 16:9, 9:16, 4:3, 3:4 or 1:1 and follow the image when a first frame is given.
+- Several images are separate Studio jobs. Speech always comes back as WAV.
+
+## Notes
+
+- The Studio runs one GPU queue in order. The scripts stop polling after 2 hours for video and 1 hour for images and speech; the canvas then reports an error while the job keeps running in the Studio, where the result can still be found.
+- Results are Studio file URLs; deleting the job in the Studio removes the file.
+- Like other channels, the API key is stored in this browser.

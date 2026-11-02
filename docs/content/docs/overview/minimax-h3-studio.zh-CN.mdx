@@ -1,0 +1,43 @@
+---
+title: 接入 MiniMax-H3 Studio
+description: 用自建的 MiniMax-H3 Studio 在本地 GPU 上生成画布里的视频、图片和配音
+---
+
+# 接入 MiniMax-H3 Studio
+
+[MiniMax-H3 Studio](https://github.com/MarsSovereign/minimax-h3-studio) 是部署在单张 GPU 上的生成服务，提供 MiniMax-H3 视频（文生、首帧、首尾帧、多参考图/参考视频、引导音频）、Qwen Image / FLUX.2 Klein / MOSS 图片和 Qwen3-TTS 等语音。画布通过内置调用脚本把任务提交到 Studio 自己的队列，再轮询结果，不经过任何云端 API。
+
+## Studio 端设置
+
+在 Studio 的 `.env` 中设置后执行 `./deploy.sh server`：
+
+```bash
+# 允许画布页面跨域访问；按画布实际访问地址填写，多个用逗号分隔
+H3_CORS_ORIGINS=http://localhost:3000
+# 可选：访问令牌，生成方式 openssl rand -hex 24
+H3_API_TOKEN=
+```
+
+## 画布端设置
+
+1. 打开「配置 → 渠道」，新建一个渠道：Base URL 填 Studio 地址（例如 `http://gpu-host:8190`），API Key 填 `H3_API_TOKEN`；Studio 未设置令牌时随便填一段文字即可。
+2. 在渠道里手动添加模型，并为每个模型打开「调用脚本」，插入模板「MiniMax-H3 Studio（本地 GPU）」后保存：
+
+| 能力 | 模型名 | 说明 |
+| --- | --- | --- |
+| 视频 | `h3` | 由 Studio 按模式和清晰度选择推荐模型 |
+| 视频 | `fasth3-omniref`、`larryvrh-v4-sparse`、`pika-flex-ref2va-sparse-all` 等 | 指定 Studio 模型，可选值见 Studio 的 `/api/presets` 中的 `loras` |
+| 图片 | `qwen-image-21-turbo`、`flux-klein-4b`、`moss` | 有参考图时为编辑（最多 4 张，MOSS 只能文生图） |
+| 音频 | `qwen3_tts`、`voxcpm2`、`omnivoice` | 填写「声音说明」时按说明设计音色，否则使用模型默认音色 |
+
+## 参数对应
+
+- 视频「首尾帧」：无图为文生视频，第 1 张为首帧，第 2 张为尾帧；「全能参考」：参考图最多 6 张、参考视频最多 3 段（每段至少 2 秒）。连接的第一段音频作为引导音频。
+- 时长限制在 2–15 秒；清晰度 480p 及以下对应 Studio 544p，其余对应 768p；比例就近取 16:9、9:16、4:3、3:4、1:1，带首帧时跟随图片比例。
+- 图片生成多张时每张是一个独立任务。语音始终返回 WAV。
+
+## 注意
+
+- Studio 只有一张 GPU，所有任务按顺序排队。脚本轮询上限：视频 2 小时，图片和语音 1 小时；超时后画布报错，但任务仍在 Studio 中运行，可在 Studio 页面查看结果。
+- 结果以 Studio 的文件地址返回，Studio 删除任务后对应文件也会失效。
+- 生成任务的 API Key 与其他渠道一样保存在浏览器本地。
