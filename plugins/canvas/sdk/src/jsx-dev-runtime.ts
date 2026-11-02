@@ -2,15 +2,12 @@
 
 import type * as React from "react";
 
-import { getReact } from "./runtime";
-import { Fragment } from "./jsx-runtime";
+import { Fragment, jsx, jsxs } from "./jsx-runtime";
 
 export { Fragment };
 export type { JSX } from "./jsx-runtime";
 
-export function jsxDEV(type: unknown, props: Record<string, unknown> | null, key?: unknown): React.ReactElement {
-    const react = getReact();
-    const resolvedType = type === Fragment ? react.Fragment : type;
-    const config = key === undefined ? props : { ...(props ?? {}), key };
-    return react.createElement(resolvedType as never, config as never);
+// jsxDEV 的第 4 个参数标记 children 是否为静态多子节点,与 jsxs 的语义相同。
+export function jsxDEV(type: unknown, props: Record<string, unknown> | null, key?: unknown, isStaticChildren?: boolean): React.ReactElement {
+    return isStaticChildren ? jsxs(type, props, key) : jsx(type, props, key);
 }

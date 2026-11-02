@@ -43,7 +43,9 @@ export function applyCanvasAgentOps(snapshot: CanvasAgentSnapshot, ops?: CanvasA
     (Array.isArray(ops) ? ops : []).forEach((op, index) => {
         if (!op?.type) return;
         if (op.type === "add_node") {
-            const nodeType = op.nodeType && isRegisteredNodeType(op.nodeType) ? op.nodeType : CanvasNodeType.Text;
+            // Plugin types ("<pluginId>:<name>") are kept even before the plugin is installed: the canvas shows a
+            // missing-plugin placeholder and keeps the metadata instead of turning the node into text.
+            const nodeType = op.nodeType && (isRegisteredNodeType(op.nodeType) || /^[a-z0-9-]+:[a-z0-9-]+$/i.test(op.nodeType)) ? op.nodeType : CanvasNodeType.Text;
             const spec = getNodeSpec(nodeType);
             const node: CanvasNodeData = {
                 id: op.id || `${nodeType}-${Date.now()}-${index}`,

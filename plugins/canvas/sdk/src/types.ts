@@ -163,6 +163,8 @@ export type GenerateImageResult = {
 export type GenerateVideoOptions = GenerateOptions & {
     size?: string;
     seconds?: string;
+    // 覆盖宿主的视频模式:frames 把图片当首尾帧,reference 把图片当主体参考
+    mode?: "frames" | "reference";
 };
 
 export type GenerateVideoResult = {
@@ -171,6 +173,8 @@ export type GenerateVideoResult = {
     width?: number;
     height?: number;
     durationMs?: number;
+    // 视频已存入本地时返回;写进节点 metadata.storageKey,刷新后视频仍可用
+    storageKey?: string;
 };
 
 export type GenerateTextOptions = {

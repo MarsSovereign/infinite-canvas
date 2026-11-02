@@ -36,6 +36,15 @@ H3_API_TOKEN=
 - Duration is clamped to 2–15 s; 480p and below map to the Studio's 544p, everything else to 768p; ratios snap to 16:9, 9:16, 4:3, 3:4 or 1:1 and follow the image when a first frame is given.
 - Several images are separate Studio jobs. Speech always comes back as WAV.
 
+## Film storyboard plugin
+
+The official "film" plugin adds shot, character/location card and timeline nodes for multi-shot films:
+
+- Connect each card's canonical reference image into the card, then cards into a shot in order; the connection order is the prompt's `<Picture N>` order.
+- The shot toolbar's Generate submits with the current video model in reference mode, so two references (character + location) are not mistaken for first and last frames.
+- Each take stays as a downstream video node; accepted shots join the timeline, which can play them back to back.
+- OpenMontage's `ai-short-film` pipeline exports a whole project (cards, references, shots, accepted clips) with its `canvas_storyboard` tool; import the archive from the canvas library.
+
 ## Notes
 
 - The Studio runs one GPU queue in order. The scripts stop polling after 2 hours for video and 1 hour for images and speech; the canvas then reports an error while the job keeps running in the Studio, where the result can still be found.

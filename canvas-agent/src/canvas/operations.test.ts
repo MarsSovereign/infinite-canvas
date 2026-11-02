@@ -25,3 +25,13 @@ test("generation flow still creates a prompt node for prose prompts", () => {
     const config = ops.find((op) => op.type === "add_node" && op.nodeType === "config");
     assert.match(String(config?.metadata?.prompt), /@\[node:text-/);
 });
+
+test("plugin node types pass validation and reach the canvas as add_node ops", async () => {
+    const { toolInputSchemas, canvasOpSchema } = await import("./schemas.js");
+    assert.equal(toolInputSchemas.canvas_create_node.safeParse({ nodeType: "film:shot", metadata: { shotId: "S01" } }).success, true);
+    assert.equal(canvasOpSchema.safeParse({ type: "add_node", nodeType: "film:card" }).success, true);
+    assert.equal(toolInputSchemas.canvas_create_node.safeParse({ nodeType: "not a type" }).success, false);
+    const ops = opsOf("canvas_create_node", { nodeType: "film:shot", title: "S01", metadata: { duration: 10 } });
+    assert.equal(ops[0].nodeType, "film:shot");
+    assert.deepEqual(ops[0].metadata, { duration: 10 });
+});

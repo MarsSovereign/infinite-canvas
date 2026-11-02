@@ -71,10 +71,11 @@ export function usePluginHost(params: PluginHostParams) {
                     ...(options?.model ? { model: options.model } : {}),
                     ...(options?.size ? { size: options.size } : {}),
                     ...(options?.seconds ? { videoSeconds: options.seconds } : {}),
+                    ...(options?.mode ? { videoMode: options.mode } : {}),
                 };
                 ensureReady(config);
                 const file = await storeGeneratedVideo(await requestVideoGeneration(config, prompt, toReferences(options?.references), { signal: options?.signal }));
-                return { url: file.url, mimeType: file.mimeType, width: file.width, height: file.height, durationMs: file.durationMs };
+                return { url: file.url, mimeType: file.mimeType, width: file.width, height: file.height, durationMs: file.durationMs, ...(file.storageKey ? { storageKey: file.storageKey } : {}) };
             },
             generateText: async (prompt, options) => {
                 const config = { ...buildGenerationConfig(effectiveConfig, undefined, "text"), ...(options?.model ? { model: options.model } : {}) };
